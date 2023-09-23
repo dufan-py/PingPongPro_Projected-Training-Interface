@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>乒乓球交互界面</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: black;
+}
+</style>
+
+</head>
+
+<body>
+
+<canvas id="myCanvas"></canvas>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function requestFullscreen() {
+        const el = document.documentElement;
+
+        if (el.requestFullscreen) {
+            el.requestFullscreen();
+        } else if (el.mozRequestFullScreen) { // Firefox
+            el.mozRequestFullScreen();
+        } else if (el.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            el.webkitRequestFullscreen();
+        } else if (el.msRequestFullscreen) { // IE/Edge
+            el.msRequestFullscreen();
+        }
+    }
+
+    $(document).ready(function () {
+        // 在用户点击页面时尝试请求全屏
+        $('body').on('click', function() {
+            requestFullscreen();
+        });
+
+        let canvas = document.getElementById("myCanvas");
+        let ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        let rectHeight = 550; // 球台大小
+        let rectWidth = rectHeight * 1.8;
+        let tableOffsetX = 0; // 水平偏移量
+        let tableOffsetY = 0; // 垂直偏移量
+        let rotationDegree = 10; // 设置旋转角度（以度数表示）
+        let rotationAngle = rotationDegree * (Math.PI / 180);
+        setInterval(function () {
+            $.getJSON("/get_coordinates/", function (data) {
+                let pointX = data.x;
+                let pointY = data.y;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let rectCenterX = canvas.width / 2 - rectWidth / 2 + tableOffsetX;
+                let rectCenterY = canvas.height / 2 - rectHeight / 2 + tableOffsetY;
+
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(rotationAngle);
+                ctx.translate(-canvas.width / 2, -canvas.height / 2);
+
+                ctx.fillStyle = "black";
+                ctx.fillRect(rectCenterX, rectCenterY, rectWidth, rectHeight);
+
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(rectCenterX + rectWidth / 2 + pointX, rectCenterY + rectHeight / 2 + pointY, 5, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(rectCenterX , rectCenterY + rectHeight / 2);
+                ctx.lineTo(rectCenterX + rectWidth , rectCenterY + rectHeight / 2);
+                ctx.moveTo(rectCenterX + rectWidth / 2, rectCenterY );
+                ctx.lineTo(rectCenterX + rectWidth / 2, rectCenterY + rectHeight );
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.restore();
+            });
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>
+
+
+# html界面
