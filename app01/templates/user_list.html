@@ -36,7 +36,7 @@ body {
     }
 
     $(document).ready(function () {
-        // 在用户点击页面时尝试请求全屏
+
         $('body').on('click', function() {
             requestFullscreen();
         });
@@ -52,52 +52,50 @@ body {
         window.addEventListener("resize", resizeCanvas);
         resizeCanvas();
 
-        let rectHeight = 550; // 球台大小
-        let rectWidth = rectHeight * 1.8;
-        let tableOffsetX = 0; // 水平偏移量
-        let tableOffsetY = 0; // 垂直偏移量
-        let rotationDegree = 10; // 设置旋转角度（以度数表示）
-        let rotationAngle = rotationDegree * (Math.PI / 180);
+
         setInterval(function () {
             $.getJSON("/get_coordinates/", function (data) {
-                let pointX = data.x;
-                let pointY = data.y;
+                let pointX = canvas.width / 2 + data.x;  // 修改了此处
+                let pointY = canvas.height / 2 - data.y;  // 修改了此处
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                let rectCenterX = canvas.width / 2 - rectWidth / 2 + tableOffsetX;
-                let rectCenterY = canvas.height / 2 - rectHeight / 2 + tableOffsetY;
-
-                ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate(rotationAngle);
-                ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
                 ctx.fillStyle = "black";
-                ctx.fillRect(rectCenterX, rectCenterY, rectWidth, rectHeight);
 
-                ctx.fillStyle = "white";
+                // 绘制四边形
                 ctx.beginPath();
-                ctx.arc(rectCenterX + rectWidth / 2 + pointX, rectCenterY + rectHeight / 2 + pointY, 5, 0, 2 * Math.PI);
+                ctx.moveTo(canvas.width / 2 + data.cor1x, canvas.height / 2 - data.cor1y);  // 修改了此处
+                ctx.lineTo(canvas.width / 2 + data.cor2x, canvas.height / 2 - data.cor2y);  // 修改了此处
+                ctx.lineTo(canvas.width / 2 + data.cor3x, canvas.height / 2 - data.cor3y);  // 修改了此处
+                ctx.lineTo(canvas.width / 2 + data.cor4x, canvas.height / 2 - data.cor4y);  // 修改了此处
+                ctx.closePath();
                 ctx.fill();
 
-                ctx.beginPath();
-                ctx.moveTo(rectCenterX , rectCenterY + rectHeight / 2);
-                ctx.lineTo(rectCenterX + rectWidth , rectCenterY + rectHeight / 2);
-                ctx.moveTo(rectCenterX + rectWidth / 2, rectCenterY );
-                ctx.lineTo(rectCenterX + rectWidth / 2, rectCenterY + rectHeight );
                 ctx.strokeStyle = "white";
                 ctx.lineWidth = 2;
+
+                // 绘制四边形边框
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2 + data.cor1x, canvas.height / 2 - data.cor1y);  // 修改了此处
+                ctx.lineTo(canvas.width / 2 + data.cor2x, canvas.height / 2 - data.cor2y);  // 修改了此处
+                ctx.lineTo(canvas.width / 2 + data.cor3x, canvas.height / 2 - data.cor3y);  // 修改了此处
+                ctx.lineTo(canvas.width / 2 + data.cor4x, canvas.height / 2 - data.cor4y);  // 修改了此处
+                ctx.closePath();
                 ctx.stroke();
 
-                ctx.restore();
+                // 绘制乒乓球的位置
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI);
+                ctx.fill();
             });
+
+
         }, 1000);
     });
 </script>
 
 </body>
+
 </html>
 
-
-# html界面
