@@ -1,2 +1,4 @@
 # PingPongPro_Projected-Training-Interface
 基于Django的乒乓球训练系统的投影交互界面
+
+工程文件在branch的master里
