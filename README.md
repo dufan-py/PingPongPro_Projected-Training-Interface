@@ -9,6 +9,12 @@
 
 23/9/24：实现显示任意四边形球台（投影变换）   
 
-Ⅰ后端-py：使用cv2投射变换函数，初步测试通过，待实测
+  Ⅰ 后端-py：使用cv2投射变换函数，初步测试通过，待实测
 
-Ⅱ前端-html：通过django的view和urls连接前后端(即html和py)，在html文件使用py传的参数绘制任意四边形和乒乓球
+  Ⅱ 前端-html：通过django的view和urls连接前后端(即html和py)，在html文件使用py传的参数绘制任意四边形和乒乓球
+
+
+
+23/10/10：在Linux操作系统中实现该项目
+
+  Ⅰ 在Linux系统中使用anaconda新建python虚拟环境，用vscode打开工程文件，并在vscode中配置django环境
