@@ -20,9 +20,9 @@ UPDATE:
 
 
 
-23/10/10：在Linux操作系统中实现该项目
+23/10/10：在Ubuntu系统中实现该项目
 
-    Ⅰ 在Linux系统中使用anaconda新建python虚拟环境，用vscode打开工程文件，并在vscode中配置django环境
+    Ⅰ 在Ubuntu中使用anaconda新建python虚拟环境，用vscode打开工程文件，并在vscode中配置django环境
 
 
 23/10/17：添加球台十二等分线
@@ -33,3 +33,12 @@ UPDATE:
     Ⅰ 提高页面和乒乓球刷新率，测试CPU占用
 
     Ⅱ 实现球台中心位置在页面上的可任意设定
+
+23/11/08: 
+
+    Ⅰ 实现在球台上保留球的轨迹和落点
+
+    Ⅱ 测试在Ubuntu中页面高刷新率的CPU占用
+    
+截至11.08页面如图：
+<img width="1358" alt="f8d6fbd52aded33f5607e7fc66a0fc8" src="https://github.com/dufan-py/PingPongPro_Projected-Training-Interface/assets/53752434/8eed7a16-4697-4bcd-9e64-dda5d6f3795c">
