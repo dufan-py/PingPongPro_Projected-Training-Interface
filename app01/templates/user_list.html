@@ -53,49 +53,392 @@ body {
         resizeCanvas();
 
 
-        setInterval(function () {
-            $.getJSON("/get_coordinates/", function (data) {
-                let pointX = canvas.width / 2 + data.x;  // 修改了此处
-                let pointY = canvas.height / 2 - data.y;  // 修改了此处
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+// 页面内容显示---逻辑：(约0.1ms)反复调用requestAnimationFrame()，在两个绘制函数里判断时间是否够足
 
-                ctx.fillStyle = "black";
-
-                // 绘制四边形
-                ctx.beginPath();
-                ctx.moveTo(canvas.width / 2 + data.cor1x, canvas.height / 2 - data.cor1y);  // 修改了此处
-                ctx.lineTo(canvas.width / 2 + data.cor2x, canvas.height / 2 - data.cor2y);  // 修改了此处
-                ctx.lineTo(canvas.width / 2 + data.cor3x, canvas.height / 2 - data.cor3y);  // 修改了此处
-                ctx.lineTo(canvas.width / 2 + data.cor4x, canvas.height / 2 - data.cor4y);  // 修改了此处
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 2;
-
-                // 绘制四边形边框
-                ctx.beginPath();
-                ctx.moveTo(canvas.width / 2 + data.cor1x, canvas.height / 2 - data.cor1y);  // 修改了此处
-                ctx.lineTo(canvas.width / 2 + data.cor2x, canvas.height / 2 - data.cor2y);  // 修改了此处
-                ctx.lineTo(canvas.width / 2 + data.cor3x, canvas.height / 2 - data.cor3y);  // 修改了此处
-                ctx.lineTo(canvas.width / 2 + data.cor4x, canvas.height / 2 - data.cor4y);  // 修改了此处
-                ctx.closePath();
-                ctx.stroke();
-
-                // 绘制乒乓球的位置
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI);
-                ctx.fill();
-            });
+        let lastPageUpdateTimestamp = 0;
+        let pageUpdateInterval = 500; // 每100毫秒更新一次页面元素
+        let lastBallUpdateTimestamp = 0;
+        let ballUpdateInterval = 500; // 每10毫秒更新一次乒乓球的位置
+        let ballUpdateTime = 0;
+        let NumTrace = 10;  // 乒乓球轨迹的数量
+        let NumLanding = 10;  // 乒乓球落点的数量
 
 
-        }, 1000);
+        function drawPageElements(timestamp) {
+            if (!lastPageUpdateTimestamp) {
+                lastPageUpdateTimestamp = timestamp;
+            }
+            const elapsed = timestamp - lastPageUpdateTimestamp;
+
+            if (elapsed >= pageUpdateInterval) {
+                // 在这里更新页面元素的绘制，包括四边形、边框和十二等分的线
+                $.getJSON("/get_coordinates/", function (data) {
+                    let pointX = canvas.width / 2 + data.x0 + data.x;
+                    let pointY = canvas.height / 2 - data.y0 - data.y;
+
+                    // 清除乒乓球的位置
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = "black";
+                    // 绘制四边形
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2 + data.x0 + data.cor1x, canvas.height / 2 - data.y0 - data.cor1y);
+                    ctx.lineTo(canvas.width / 2 + data.x0 + data.cor2x, canvas.height / 2 - data.y0 - data.cor2y);
+                    ctx.lineTo(canvas.width / 2 + data.x0 + data.cor3x, canvas.height / 2 - data.y0 - data.cor3y);
+                    ctx.lineTo(canvas.width / 2 + data.x0 + data.cor4x, canvas.height / 2 - data.y0 - data.cor4y);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 2;
+
+                    // 绘制四边形边框
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2 + data.x0 + data.cor1x, canvas.height / 2 - data.y0 - data.cor1y);
+                    ctx.lineTo(canvas.width / 2 + data.x0 + data.cor2x, canvas.height / 2 - data.y0 - data.cor2y);
+                    ctx.lineTo(canvas.width / 2 + data.x0 + data.cor3x, canvas.height / 2 - data.y0 - data.cor3y);
+                    ctx.lineTo(canvas.width / 2 + data.x0 + data.cor4x, canvas.height / 2 - data.y0 - data.cor4y);
+                    ctx.closePath();
+                    ctx.stroke();
+
+                    // 绘制十二等分的线
+                    ctx.strokeStyle = "white";
+                    for (let i = 0; i < 6; i++) {
+                        let startX = canvas.width / 2 + data.x0 + data["P" + (2 * i) + "x"];
+                        let startY = canvas.height / 2 - data.y0 - data["P" + (2 * i) + "y"];
+                        let endX = canvas.width / 2 + data.x0 + data["P" + (2 * i + 1) + "x"];
+                        let endY = canvas.height / 2 - data.y0 - data["P" + (2 * i + 1) + "y"];
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+                    }
+
+                    for (let i = 0; i< NumLanding; i++){
+                        let pointX = canvas.width / 2 + data.x0 + data["LandPoint"+i+"x"];
+                        let pointY = canvas.height / 2 - data.y0 - data["LandPoint"+i+"y"];
+
+                        ctx.fillStyle = "red";
+
+                        // 绘制乒乓球的位置
+                        ctx.beginPath();
+                        ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI); //5是半径,0是开始角度,2*Math.PI是结束角度
+                        ctx.fill();
+                    }
+
+                });
+                lastPageUpdateTimestamp = timestamp;
+            }
+            // 请求下一帧动画
+            requestAnimationFrame(drawPageElements);
+        }
+
+
+        function updateBallPosition(timestamp) {
+
+            if (!lastBallUpdateTimestamp) {
+                lastBallUpdateTimestamp = timestamp;
+            }
+            const elapsed = timestamp - lastBallUpdateTimestamp;
+
+            // 在这里更新乒乓球的位置
+            if (elapsed >= ballUpdateInterval) {
+                console.log("Timestamp in updateBallPosition:", timestamp);
+                $.getJSON("/get_coordinates/", function (data) {
+
+                    for (let i = 0; i < NumTrace; i++) {
+                        let pointX = canvas.width / 2 + data.x0 + data["point"+i+"x"];
+                        let pointY = canvas.height / 2 - data.y0 - data["point"+i+"y"];
+
+                        ctx.fillStyle = "white";
+
+                        // 绘制乒乓球的位置
+                        ctx.beginPath();
+                        ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI); //5是半径,0是开始角度,2*Math.PI是结束角度
+                        ctx.fill();
+                    }
+
+                    {#let pointX = canvas.width / 2 + data.x0 + data.point1x;#}
+                    {#let pointY = canvas.height / 2 - data.y0 - data.point1y;#}
+                    {##}
+                    {#ctx.fillStyle = "white";#}
+                    {##}
+                    {#// 绘制乒乓球的位置#}
+                    {#ctx.beginPath();#}
+                    {#ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI); //5是半径,0是开始角度,2*Math.PI是结束角度#}
+                    {#ctx.fill();#}
+                });
+
+                lastBallUpdateTimestamp = timestamp;
+            }
+
+            // 请求下一帧动画
+            requestAnimationFrame(updateBallPosition);
+        }
+
+        // 启动两个独立的动画循环
+        requestAnimationFrame(drawPageElements);
+        requestAnimationFrame(updateBallPosition);
     });
 </script>
 
 </body>
-
 </html>
+
+
+{##}
+{##}
+{#<!DOCTYPE html>#}
+{#<html>#}
+{#<head>#}
+{#<meta charset="utf-8">#}
+{#<title>乒乓球交互界面</title>#}
+{##}
+{#<style>#}
+{#body {#}
+{#  margin: 0;#}
+{#  overflow: hidden;#}
+{#  background-color: black;#}
+{#}#}
+{#</style>#}
+{##}
+{#</head>#}
+{##}
+{#<body>#}
+{##}
+{#<canvas id="myCanvas"></canvas>#}
+{##}
+{#<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>#}
+{##}
+{#<script>#}
+{#    function requestFullscreen() {#}
+{#        const el = document.documentElement;#}
+{##}
+{#        if (el.requestFullscreen) {#}
+{#            el.requestFullscreen();#}
+{#        } else if (el.mozRequestFullScreen) { // Firefox#}
+{#            el.mozRequestFullScreen();#}
+{#        } else if (el.webkitRequestFullscreen) { // Chrome, Safari and Opera#}
+{#            el.webkitRequestFullscreen();#}
+{#        } else if (el.msRequestFullscreen) { // IE/Edge#}
+{#            el.msRequestFullscreen();#}
+{#        }#}
+{#    }#}
+{##}
+{#    $(document).ready(function () {#}
+{##}
+{#        $('body').on('click', function() {#}
+{#            requestFullscreen();#}
+{#        });#}
+{##}
+{#        let canvas = document.getElementById("myCanvas");#}
+{#        let ctx = canvas.getContext("2d");#}
+{##}
+{#        function resizeCanvas() {#}
+{#            canvas.width = window.innerWidth;#}
+{#            canvas.height = window.innerHeight;#}
+{#        }#}
+{##}
+{#        window.addEventListener("resize", resizeCanvas);#}
+{#        resizeCanvas();#}
+{##}
+{##}
+{#        let lastPageUpdateTimestamp = 0;#}
+{#        let pageUpdateInterval = 100; // 每100毫秒更新一次页面元素#}
+{#        let lastBallUpdateTimestamp = 0;#}
+{#        let ballUpdateInterval = 10; // 每10毫秒更新一次乒乓球的位置#}
+{#        let ballUpdateTime = 0;#}
+{##}
+{##}
+{#        function drawPageElements(timestamp) {#}
+{#            $.getJSON("/get_coordinates/", function (data) {#}
+{#                let pointX = canvas.width / 2 + data.x0 + data.x;#}
+{#                let pointY = canvas.height / 2 - data.y0 - data.y;#}
+{##}
+{#                ctx.clearRect(0, 0, canvas.width, canvas.height);#}
+{##}
+{#                ctx.fillStyle = "black";#}
+{#                // 绘制四边形#}
+{#                ctx.beginPath();#}
+{#                ctx.moveTo(canvas.width / 2 + data.x0 + data.cor1x, canvas.height / 2 - data.y0 - data.cor1y);#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor2x, canvas.height / 2 - data.y0 - data.cor2y);#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor3x, canvas.height / 2 - data.y0 - data.cor3y);#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor4x, canvas.height / 2 - data.y0 - data.cor4y);#}
+{#                ctx.closePath();#}
+{#                ctx.fill();#}
+{##}
+{#                ctx.strokeStyle = "white";#}
+{#                ctx.lineWidth = 2;#}
+{##}
+{#                // 绘制四边形边框#}
+{#                ctx.beginPath();#}
+{#                ctx.moveTo(canvas.width / 2 + data.x0 + data.cor1x, canvas.height / 2 - data.y0 - data.cor1y);#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor2x, canvas.height / 2 - data.y0 - data.cor2y);#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor3x, canvas.height / 2 - data.y0 - data.cor3y);#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor4x, canvas.height / 2 - data.y0 - data.cor4y);#}
+{#                ctx.closePath();#}
+{#                ctx.stroke();#}
+{##}
+{#                // 绘制十二等分的线#}
+{#                ctx.strokeStyle = "white";#}
+{#                for (let i = 0; i < 6; i++) {#}
+{#                    let startX = canvas.width / 2 + data.x0 + data["P" + (2 * i) + "x"];#}
+{#                    let startY = canvas.height / 2 - data.y0 - data["P" + (2 * i) + "y"];#}
+{#                    let endX = canvas.width / 2 + data.x0 + data["P" + (2 * i + 1) + "x"];#}
+{#                    let endY = canvas.height / 2 - data.y0 - data["P" + (2 * i + 1) + "y"];#}
+{#                    ctx.beginPath();#}
+{#                    ctx.moveTo(startX, startY);#}
+{#                    ctx.lineTo(endX, endY);#}
+{#                    ctx.stroke();#}
+{#                }#}
+{##}
+{#                // 绘制乒乓球的位置#}
+{#                ctx.fillStyle = "white";#}
+{#                ctx.beginPath();#}
+{#                ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI);#}
+{#                ctx.fill();#}
+{##}
+{#                // 请求下一帧动画#}
+{#                requestAnimationFrame(drawPageElements);#}
+{#            },10);#}
+{#        }#}
+{##}
+{#        // 启动动画#}
+{#        drawPageElements();#}
+{#    });#}
+{#</script>#}
+{##}
+{#</body>#}
+{#</html>#}
+{##}
+
+
+
+
+{#<!DOCTYPE html>#}
+{#<html>#}
+{#<head>#}
+{#<meta charset="utf-8">#}
+{#<title>乒乓球交互界面</title>#}
+{##}
+{#<style>#}
+{#body {#}
+{#  margin: 0;#}
+{#  overflow: hidden;#}
+{#  background-color: black;#}
+{#}#}
+{#</style>#}
+{##}
+{#</head>#}
+{##}
+{#<body>#}
+{##}
+{#<canvas id="myCanvas"></canvas>#}
+{##}
+{#<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>#}
+{##}
+{#<script>#}
+{#    function requestFullscreen() {#}
+{#        const el = document.documentElement;#}
+{##}
+{#        if (el.requestFullscreen) {#}
+{#            el.requestFullscreen();#}
+{#        } else if (el.mozRequestFullScreen) { // Firefox#}
+{#            el.mozRequestFullScreen();#}
+{#        } else if (el.webkitRequestFullscreen) { // Chrome, Safari and Opera#}
+{#            el.webkitRequestFullscreen();#}
+{#        } else if (el.msRequestFullscreen) { // IE/Edge#}
+{#            el.msRequestFullscreen();#}
+{#        }#}
+{#    }#}
+{##}
+{#    $(document).ready(function () {#}
+{##}
+{#        $('body').on('click', function() {#}
+{#            requestFullscreen();#}
+{#        });#}
+{##}
+{#        let canvas = document.getElementById("myCanvas");#}
+{#        let ctx = canvas.getContext("2d");#}
+{##}
+{#        function resizeCanvas() {#}
+{#            canvas.width = window.innerWidth;#}
+{#            canvas.height = window.innerHeight;#}
+{#        }#}
+{##}
+{#        window.addEventListener("resize", resizeCanvas);#}
+{#        resizeCanvas();#}
+{##}
+{##}
+{#        setInterval(function () {#}
+{#            $.getJSON("/get_coordinates/", function (data) {#}
+{#                let pointX = canvas.width / 2 + data.x0 + data.x;  // 修改了此处#}
+{#                let pointY = canvas.height / 2 - data.y0 - data.y;  // 修改了此处#}
+{##}
+{#                ctx.clearRect(0, 0, canvas.width, canvas.height);#}
+{##}
+{#                ctx.fillStyle = "black";#}
+{##}
+{#                // 绘制四边形#}
+{#                ctx.beginPath();#}
+{#                ctx.moveTo(canvas.width / 2 + data.x0 + data.cor1x, canvas.height / 2 - data.y0 - data.cor1y);  // 修改了此处#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor2x, canvas.height / 2 - data.y0 - data.cor2y);  // 修改了此处#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor3x, canvas.height / 2 - data.y0 - data.cor3y);  // 修改了此处#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor4x, canvas.height / 2 - data.y0 - data.cor4y);  // 修改了此处#}
+{#                ctx.closePath();#}
+{#                ctx.fill();#}
+{##}
+{#                ctx.strokeStyle = "white";#}
+{#                ctx.lineWidth = 2;#}
+{##}
+{#                // 绘制四边形边框#}
+{#                ctx.beginPath();#}
+{#                ctx.moveTo(canvas.width / 2 + data.x0 + data.cor1x, canvas.height / 2 - data.y0 - data.cor1y);  // 修改了此处#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor2x, canvas.height / 2 - data.y0 - data.cor2y);  // 修改了此处#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor3x, canvas.height / 2 - data.y0 - data.cor3y);  // 修改了此处#}
+{#                ctx.lineTo(canvas.width / 2 + data.x0 + data.cor4x, canvas.height / 2 - data.y0 - data.cor4y);  // 修改了此处#}
+{#                ctx.closePath();#}
+{#                ctx.stroke();#}
+{##}
+{##}
+{#                // 绘制十二等分的线#}
+{#                ctx.strokeStyle = "white";#}
+{#                //let startX = canvas.width / 2 + data.x0 + data.;#}
+{#                for (let i = 0; i < 6; i++) {  // 有12个点，所以我们有6条线#}
+{#                    let startX = canvas.width / 2 + data.x0 + data["P" + (2 * i) + "x"];#}
+{#                    let startY = canvas.height / 2 - data.y0 - data["P" + (2 * i) + "y"];#}
+{#                    let endX = canvas.width / 2 + data.x0 + data["P" + (2 * i + 1) + "x"];#}
+{#                    let endY = canvas.height / 2 - data.y0 - data["P" + (2 * i + 1) + "y"];#}
+{#                    ctx.beginPath();#}
+{#                    ctx.moveTo(startX, startY);#}
+{#                    ctx.lineTo(endX, endY);#}
+{#                    ctx.stroke();#}
+{##}
+{#                }#}
+{##}
+{##}
+{#                // 绘制乒乓球的位置#}
+{#                ctx.fillStyle = "white";#}
+{#                ctx.beginPath();#}
+{#                ctx.arc(pointX, pointY, 5, 0, 2 * Math.PI);#}
+{#                ctx.fill();#}
+{#            });#}
+{##}
+{##}
+{#        }, 10);#}
+{#    });#}
+{#</script>#}
+{##}
+{#</body>#}
+{##}
+{#</html>#}
+
+
+
+
+
+
+
+
 
