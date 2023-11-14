@@ -42,3 +42,12 @@ UPDATE:
     
 截至11.08页面如图：
 <img width="1358" alt="f8d6fbd52aded33f5607e7fc66a0fc8" src="https://github.com/dufan-py/PingPongPro_Projected-Training-Interface/assets/53752434/8eed7a16-4697-4bcd-9e64-dda5d6f3795c">
+
+
+23/11/14：
+
+    Ⅰ 引入新线程points_test.py用以测试，在主线程中调用以模拟后端乒乓球轨迹坐标的传输
+
+
+
+
